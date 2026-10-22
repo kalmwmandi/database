@@ -1,0 +1,244 @@
+CHEATSHEET SQL (RUMUS + CONTOH)
+Contoh DML/JOIN/DCL memakai database konser_db
+
+
+==============================================================
+DDL
+==============================================================
+Rumus  : CREATE DATABASE db;
+Contoh : CREATE DATABASE supermarket;
+
+Rumus  : SHOW DATABASES;   USE db;
+Contoh : SHOW DATABASES;
+         USE supermarket;
+
+Rumus  : CREATE TABLE tbl (kolom tipe constraint, ...);
+Contoh : CREATE TABLE barang (
+             kodeBarang INT PRIMARY KEY,
+             nama       VARCHAR(50) NOT NULL,
+             stok       INT DEFAULT 0,
+             harga      INT
+         );
+
+Rumus  : SHOW TABLES;   DESC tbl;
+Contoh : SHOW TABLES;
+         DESC barang;
+
+Rumus  : ALTER TABLE tbl RENAME TO baru;
+Contoh : ALTER TABLE employees RENAME TO pegawai;
+
+Rumus  : ALTER TABLE tbl CHANGE lama baru tipe;
+Contoh : ALTER TABLE pegawai CHANGE id_peg NIP INT;
+
+Rumus  : ALTER TABLE tbl ADD kolom tipe;
+Contoh : ALTER TABLE pegawai ADD jenis_kelamin VARCHAR(15);
+
+Rumus  : ALTER TABLE tbl MODIFY kolom tipe;
+Contoh : ALTER TABLE pegawai MODIFY NIP VARCHAR(20);
+
+Rumus  : ALTER TABLE tbl DROP COLUMN kolom;
+Contoh : ALTER TABLE pegawai DROP COLUMN jenis_kelamin;
+
+Rumus  : DROP TABLE tbl;   DROP DATABASE db;
+Contoh : DROP TABLE pegawai;
+         DROP DATABASE supermarket;
+
+
+==============================================================
+KEY
+==============================================================
+Rumus  : ALTER TABLE tbl ADD PRIMARY KEY (kolom);
+Contoh : ALTER TABLE mahasiswa ADD PRIMARY KEY (idMhs);
+
+Rumus  : ALTER TABLE tbl ADD FOREIGN KEY (kolom)
+             REFERENCES induk(kolom)
+             ON DELETE CASCADE|RESTRICT|SET NULL|NO ACTION;
+Contoh : ALTER TABLE mahasiswa ADD FOREIGN KEY (idProdi)
+             REFERENCES prodi(idProdi) ON DELETE CASCADE;
+
+
+==============================================================
+DML
+==============================================================
+INSERT semua kolom
+Rumus  : INSERT INTO tbl VALUES (v1, v2, ...);
+Contoh : INSERT INTO customers VALUES
+             (26,'Shena','Mayna','mynn@mail.example.com',
+              '0815151229919','2000-11-12',3,NULL);
+
+INSERT sebagian kolom
+Rumus  : INSERT INTO tbl (k1, k2) VALUES (v1, v2);
+Contoh : INSERT INTO customers
+             (customer_id, first_name, last_name, email,
+              birth_date, city_id)
+         VALUES (28,'Bob','Sayyid','sayyid@mail.example.com',
+                 '2003-12-02',6);
+
+UPDATE
+Rumus  : UPDATE tbl SET kolom = nilai WHERE kondisi;
+Contoh : UPDATE customers SET phone = '081850121312'
+         WHERE customer_id = 27;
+
+DELETE
+Rumus  : DELETE FROM tbl WHERE kondisi;
+Contoh : DELETE FROM customers WHERE customer_id IN (26, 28);
+
+SELECT
+Rumus  : SELECT kolom FROM tbl;
+Contoh : SELECT concert_name, concert_date FROM concerts;
+         SELECT * FROM orders;
+
+SELECT DISTINCT
+Rumus  : SELECT DISTINCT kolom FROM tbl;
+Contoh : SELECT DISTINCT payment_method FROM orders;
+
+
+==============================================================
+WHERE
+==============================================================
+AND / OR / NOT
+Rumus  : WHERE k1 = a AND k2 > b
+Contoh : SELECT category_name, price, quota
+         FROM ticket_categories
+         WHERE price > 500000 AND quota < 500;
+
+BETWEEN
+Rumus  : WHERE k BETWEEN a AND b
+Contoh : SELECT venue_name, capacity FROM venues
+         WHERE capacity BETWEEN 5000 AND 15000;
+
+IN / NOT IN
+Rumus  : WHERE k IN (a, b)      WHERE k NOT IN (a, b)
+Contoh : SELECT concert_name, status FROM concerts
+         WHERE status IN ('Dijual','Dibatalkan');
+         SELECT order_id, payment_method FROM orders
+         WHERE payment_method NOT IN ('Transfer','E-Wallet');
+
+LIKE
+Rumus  : WHERE k LIKE 'a%'  (awalan a)
+                      '%a'  (akhiran a)
+                      '%a%' (ada a)
+                      '_a%' (huruf ke-2 a)
+Contoh : SELECT * FROM artists WHERE artist_name LIKE '%Project';
+         SELECT COUNT(*) FROM customers WHERE first_name LIKE 'A%';
+
+Alias
+Rumus  : kolom AS alias        tbl alias
+Contoh : SELECT CONCAT(first_name,' ',last_name) AS nama_lengkap
+         FROM customers c;
+
+ORDER BY
+Rumus  : ORDER BY kolom ASC|DESC
+Contoh : SELECT concert_name, concert_date FROM concerts
+         WHERE status = 'Dijual' ORDER BY concert_date ASC;
+
+
+==============================================================
+AGREGAT + GROUP BY
+==============================================================
+Rumus  : COUNT(k)  SUM(k)  AVG(k)  MIN(k)  MAX(k)
+Contoh : SELECT COUNT(*) AS total_order FROM orders;
+         SELECT SUM(quota) AS total_kuota,
+                AVG(price) AS rata_harga,
+                MAX(price) AS tertinggi,
+                MIN(price) AS terendah
+         FROM ticket_categories;
+
+Rumus  : SELECT kolom, agregat(kolom) FROM tbl GROUP BY kolom;
+Contoh : SELECT payment_method, COUNT(*) AS jumlah_order
+         FROM orders
+         GROUP BY payment_method
+         ORDER BY jumlah_order DESC;
+
+
+==============================================================
+JOIN
+==============================================================
+INNER JOIN (hanya yang cocok)
+Rumus  : SELECT ... FROM a JOIN b ON a.kolom = b.kolom;
+Contoh : SELECT a.artist_name, g.genre_name
+         FROM artists a
+         JOIN genres g ON a.genre_id = g.genre_id;
+
+Gabung banyak tabel
+Contoh : SELECT CONCAT(cu.first_name,' ',cu.last_name) AS nama,
+                c.concert_name, tc.category_name, od.quantity
+         FROM orders od
+         JOIN customers cu         ON od.customer_id = cu.customer_id
+         JOIN ticket_categories tc ON od.category_id = tc.category_id
+         JOIN concerts c           ON tc.concert_id  = c.concert_id
+         WHERE od.status = 'Lunas';
+
+LEFT JOIN (semua kiri + kanan yang cocok)
+Contoh : SELECT cu.first_name, od.order_id
+         FROM customers cu
+         LEFT JOIN orders od ON cu.customer_id = od.customer_id;
+         (customer yang belum pernah order -> order_id NULL)
+
+RIGHT JOIN (semua kanan + kiri yang cocok)
+Contoh : SELECT cu.first_name, od.order_id
+         FROM customers cu
+         RIGHT JOIN orders od ON cu.customer_id = od.customer_id;
+
+FULL JOIN (di MySQL pakai UNION)
+Contoh : SELECT cu.first_name, od.order_id
+         FROM customers cu
+         LEFT JOIN orders od ON cu.customer_id = od.customer_id
+         UNION
+         SELECT cu.first_name, od.order_id
+         FROM customers cu
+         RIGHT JOIN orders od ON cu.customer_id = od.customer_id;
+
+
+==============================================================
+HAVING + URUTAN QUERY
+==============================================================
+Urutan : SELECT -> FROM -> JOIN -> WHERE -> GROUP BY
+         -> HAVING -> ORDER BY
+
+Rumus  : ... GROUP BY kolom HAVING agregat(kolom) operator nilai
+Contoh : SELECT c.concert_name, AVG(tc.price) AS rata_harga
+         FROM concerts c
+         JOIN ticket_categories tc ON c.concert_id = tc.concert_id
+         GROUP BY c.concert_id, c.concert_name
+         HAVING AVG(tc.price) > 500000
+         ORDER BY rata_harga DESC;
+
+Contoh : SELECT c.concert_name, COUNT(o.order_id) AS jumlah_transaksi
+         FROM concerts c
+         JOIN ticket_categories tc ON c.concert_id = tc.concert_id
+         JOIN orders o ON tc.category_id = o.category_id
+         GROUP BY c.concert_id, c.concert_name
+         HAVING COUNT(o.order_id) > 3
+         ORDER BY jumlah_transaksi DESC;
+
+
+==============================================================
+DCL
+==============================================================
+Rumus  : CREATE USER 'user'@'localhost' IDENTIFIED BY 'pass';
+Contoh : CREATE USER 'adminrpl'@'localhost' IDENTIFIED BY '123';
+
+Rumus  : GRANT hak1, hak2 ON db.tbl TO 'user'@'localhost';
+Contoh : GRANT INSERT, SELECT, UPDATE ON konser_db.orders
+         TO 'adminrpl'@'localhost';
+
+Rumus  : REVOKE hak1, hak2 ON db.tbl FROM 'user'@'localhost';
+Contoh : REVOKE INSERT, SELECT, UPDATE ON konser_db.orders
+         FROM 'adminrpl'@'localhost';
+         REVOKE ALL PRIVILEGES ON konser_db.orders
+         FROM 'adminrpl'@'localhost';
+
+Rumus  : SHOW GRANTS FOR 'user'@'localhost';
+Contoh : SHOW GRANTS FOR 'adminrpl'@'localhost';
+
+(hak: SELECT, INSERT, UPDATE, DELETE, DROP, ALL PRIVILEGES)
+
+
+==============================================================
+INGAT
+==============================================================
+- WHERE = filter baris, HAVING = filter hasil GROUP BY/agregat
+- GRANT pakai TO, REVOKE pakai FROM
+- DELETE/UPDATE jangan lupa WHERE
+- String dan tanggal pakai tanda kutip: 'Lunas', '2026-01-01'
