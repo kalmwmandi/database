@@ -162,7 +162,7 @@ Rumus  : SELECT kolom
 
 Contoh : SELECT artists.artist_name, genres.genre_name
          FROM artists
-         INNER JOIN genres
+         JOIN genres
          ON artists.genre_id = genres.genre_id;
 
 
