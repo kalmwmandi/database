@@ -150,45 +150,64 @@ Contoh : SELECT payment_method, COUNT(*) AS jumlah_order
          GROUP BY payment_method
          ORDER BY jumlah_order DESC;
 
-
 ==============================================================
 JOIN
 ==============================================================
-INNER JOIN (hanya yang cocok)
-Rumus  : SELECT ... FROM a JOIN b ON a.kolom = b.kolom;
-Contoh : SELECT a.artist_name, g.genre_name
-         FROM artists a
-         JOIN genres g ON a.genre_id = g.genre_id;
 
-Gabung banyak tabel
-Contoh : SELECT CONCAT(cu.first_name,' ',cu.last_name) AS nama,
-                c.concert_name, tc.category_name, od.quantity
-         FROM orders od
-         JOIN customers cu         ON od.customer_id = cu.customer_id
-         JOIN ticket_categories tc ON od.category_id = tc.category_id
-         JOIN concerts c           ON tc.concert_id  = c.concert_id
-         WHERE od.status = 'Lunas';
+INNER JOIN (hanya data yang cocok)
+Rumus  : SELECT kolom
+         FROM tabel1
+         INNER JOIN tabel2
+         ON tabel1.kolom = tabel2.kolom;
 
-LEFT JOIN (semua kiri + kanan yang cocok)
-Contoh : SELECT cu.first_name, od.order_id
-         FROM customers cu
-         LEFT JOIN orders od ON cu.customer_id = od.customer_id;
-         (customer yang belum pernah order -> order_id NULL)
+Contoh : SELECT artists.artist_name, genres.genre_name
+         FROM artists
+         INNER JOIN genres
+         ON artists.genre_id = genres.genre_id;
 
-RIGHT JOIN (semua kanan + kiri yang cocok)
-Contoh : SELECT cu.first_name, od.order_id
-         FROM customers cu
-         RIGHT JOIN orders od ON cu.customer_id = od.customer_id;
 
-FULL JOIN (di MySQL pakai UNION)
-Contoh : SELECT cu.first_name, od.order_id
-         FROM customers cu
-         LEFT JOIN orders od ON cu.customer_id = od.customer_id
+JOIN banyak tabel
+Contoh : SELECT CONCAT(customers.first_name, ' ',
+                       customers.last_name) AS nama,
+                concerts.concert_name,
+                ticket_categories.category_name,
+                orders.quantity
+         FROM orders
+         INNER JOIN customers
+         ON orders.customer_id = customers.customer_id
+         INNER JOIN ticket_categories
+         ON orders.category_id = ticket_categories.category_id
+         INNER JOIN concerts
+         ON ticket_categories.concert_id = concerts.concert_id
+         WHERE orders.status = 'Lunas';
+
+
+LEFT JOIN (semua data kiri + data kanan yang cocok)
+Contoh : SELECT customers.first_name, orders.order_id
+         FROM customers
+         LEFT JOIN orders
+         ON customers.customer_id = orders.customer_id;
+
+         (Customer yang belum pernah order -> order_id NULL)
+
+
+RIGHT JOIN (semua data kanan + data kiri yang cocok)
+Contoh : SELECT customers.first_name, orders.order_id
+         FROM customers
+         RIGHT JOIN orders
+         ON customers.customer_id = orders.customer_id;
+
+
+FULL JOIN (MySQL menggunakan UNION)
+Contoh : SELECT customers.first_name, orders.order_id
+         FROM customers
+         LEFT JOIN orders
+         ON customers.customer_id = orders.customer_id
          UNION
-         SELECT cu.first_name, od.order_id
-         FROM customers cu
-         RIGHT JOIN orders od ON cu.customer_id = od.customer_id;
-
+         SELECT customers.first_name, orders.order_id
+         FROM customers
+         RIGHT JOIN orders
+         ON customers.customer_id = orders.customer_id;
 
 ==============================================================
 HAVING + URUTAN QUERY
